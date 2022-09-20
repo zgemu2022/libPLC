@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"plc_main.h": "c",
+		"client.h": "c",
+		"withlcd.h": "c",
+		"yx_define.h": "c"
+	}
+}
