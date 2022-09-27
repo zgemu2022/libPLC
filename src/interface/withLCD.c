@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include "YX_Define.h"
 #include "YC_Define.h"
+
+LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
+int Yc_sn;
 short Yc_PW_Data[MAX_TOTAL_PCS_NUM]; //
 unsigned int Yx_Pcs_Status = 0;
 
@@ -17,8 +20,9 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		LCD_YC_YX_DATA temp;
 		temp = *(LCD_YC_YX_DATA *)pdata;
-
 		Yc_PW_Data[temp.sn - 1] = temp.pcs_data[Active_power];
+		Yc_sn = temp.sn;
+		yc_data[temp.sn] = temp;
 	}
 	break;
 	case _YX_:
@@ -42,7 +46,6 @@ int recvfromlcd(unsigned char type, void *pdata)
 			}
 		}
 	}
-
 	break;
 
 default:

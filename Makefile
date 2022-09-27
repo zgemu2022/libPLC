@@ -37,8 +37,8 @@ $(info OBJS= $(OBJS))
 all:$(OBJS) libplc.so
 	@echo "12345 ssdlh"
 #编译完成后的拷贝的路径
-	-cp libplc.so  /mnt/hgfs/app/Tcu_lib/libplc.so;
-#	-cp libmodtcp.so  /mnt/hgfs/share_E/zgEMU/Program/libmodtcp.so;
+#	-cp libplc.so  /mnt/hgfs/app/Tcu_lib/libplc.so;
+	-cp libplc.so  /mnt/hgfs/share_E/zgEMU/Program/libplc.so;
 
 libplc.so: $(OBJS)
 	@echo "54321 xxxxx"
