@@ -44,7 +44,7 @@ int _socket_client_connect(int sockfd, struct sockaddr *serv_addr, int timeout)
 				printf("对方拒绝  %s:%d socket connect fail error:%s! \n", __FILE__, __LINE__, strerror(error));
 				if (error != ETIMEDOUT)
 				{
-					sleep(timeout); /* 防止远方拒绝时直接返回, 未等待30miao就跳出了*/
+					sleep(timeout); /* 防止远方拒绝时直接返回, 未等待30秒就跳出了*/
 				}
 				ret = -1;
 			}

@@ -3,6 +3,12 @@
 		"plc_main.h": "c",
 		"client.h": "c",
 		"withlcd.h": "c",
-		"yx_define.h": "c"
-	}
+		"yx_define.h": "c",
+		"stdlib.h": "c",
+		"socket.h": "c",
+		"stdio.h": "c",
+		"my_socket.h": "c",
+		"inet.h": "c"
+	},
+	"C_Cpp.errorSquiggles": "Disabled"
 }

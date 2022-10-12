@@ -15,8 +15,8 @@ typedef struct
 
 }LCD_PARA;//
 
-extern LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
-extern short Yc_PW_Data[MAX_TOTAL_PCS_NUM]; //
+// extern LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
+extern short Yc_PW_Data[]; //
 extern int Yc_sn;
 extern unsigned int Yx_Pcs_Status;
 #endif

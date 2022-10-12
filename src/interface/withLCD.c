@@ -7,7 +7,7 @@
 #include "YX_Define.h"
 #include "YC_Define.h"
 
-LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
+// LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
 int Yc_sn;
 short Yc_PW_Data[MAX_TOTAL_PCS_NUM]; //
 unsigned int Yx_Pcs_Status = 0;
@@ -20,9 +20,9 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		LCD_YC_YX_DATA temp;
 		temp = *(LCD_YC_YX_DATA *)pdata;
-		Yc_PW_Data[temp.sn - 1] = temp.pcs_data[Active_power];
+		Yc_PW_Data[temp.sn] = temp.pcs_data[Active_power];
 		Yc_sn = temp.sn;
-		yc_data[temp.sn] = temp;
+		// yc_data[temp.sn] = temp;
 	}
 	break;
 	case _YX_:
@@ -38,7 +38,7 @@ int recvfromlcd(unsigned char type, void *pdata)
 			if (b & (1 << bPcsRunning))
 			{
 				setbit(Yx_Pcs_Status, (32 - temp.sn));
-				//			Yx_Pcs_Status |= (1<<(32-temp.sn));
+				//Yx_Pcs_Status |= (1<<(32-temp.sn));
 			}
 			else
 			{
@@ -83,6 +83,7 @@ void subscribeFromLcd(void)
 	}
 
 	my_func(_YC_, recvfromlcd);
+	my_func(_YX_, recvfromlcd);
 	// my_func(YC_POST,recvfromdllcan);
 	// my_func(CANERR_POST,recvfromdllcan);
 }

@@ -62,7 +62,7 @@
  /home/sanway/tooltian4_7/gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux/bin/../arm-linux-gnueabihf/libc/usr/include/arm-linux-gnueabihf/bits/waitstatus.h \
  /home/sanway/tooltian4_7/gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux/bin/../arm-linux-gnueabihf/libc/usr/include/./alloca.h \
  src/interface/withLCD.h src/interface/interface.h \
- src/include/YX_Define.h src/include/YC_Define.h
+ src/include/YX_Define.h src/include/YC_Define.h src/protocol/modbus.h
 
 src/connect/socket/client.h:
 
@@ -197,3 +197,5 @@ src/interface/interface.h:
 src/include/YX_Define.h:
 
 src/include/YC_Define.h:
+
+src/protocol/modbus.h:

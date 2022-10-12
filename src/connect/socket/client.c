@@ -15,9 +15,9 @@
 #include "withLCD.h"
 #include "YX_Define.h"
 #include "YC_Define.h"
+#include "modbus.h"
 //当使用Modbus/TCP时，modbus poll一般模拟客户端，modbus slave一般模拟服务端
-int wait_flag = 0;
-int curStatusTaskId = 0;
+
 char modbus_sockt_state[MAX_CONN_NUM];
 int modbus_client_sockptr[MAX_CONN_NUM];
 
@@ -25,229 +25,12 @@ MyData clent_data_temp[MAX_CONN_NUM];
 int g_comm_qmegid[MAX_CONN_NUM];
 
 unsigned short g_num_frame = 1;
-
+int wait_flag = 0;
 
 PARA_PLC Para_plc;
 PARA_PLC *pPara_plc = (PARA_PLC *)&Para_plc;
-// static int AnalysModbus(id_thread, pcsdata.buf, pcsdata.len){
-	
-// }
 
-// unsigned char PLC_PW_Addr[] =
-// 	{
-// 		0x0001, 0x0002, 0x0003, 0x0004, 0x0005,
-// 		0x0006, 0x0007, 0x0008, 0x0009, 0x000a,
-// 		0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
-// 		0x0010, 0x0011, 0x0012, 0x0013, 0x0014,
-// 		0x0015, 0x0016, 0x0017, 0x0018, 0x0019,
-// 		0x001a, 0x001b, 0x001c, 0x001d, 0x001f,
-// 		0x0020, 0x0021, 0x0022, 0x0023, 0x0024};
 
-unsigned char PLC_PW_Addr[] =
-		{
-			0x0001, 0x0002, 0x0003, 0x0004, 0x0005,
-			0x0006, 0x0007, 0x0008, 0x0009, 0x000a,
-			0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
-			0x0010, 0x0011, 0x0012, 0x0013, 0x0014,
-			0x0015, 0x0016, 0x0017, 0x0018, 0x0019,
-			0x001a, 0x001b, 0x001c};
-
-unsigned char PLC_STATUS_Addr[] =
-		{
-			0x0028,
-			0x0029,
-			0x002C,
-};
-
-static int doPwFun06Task(int id_thread)
-{
-	printf("\n\n");
-	printf("06 PW...\n");
-	int pos = 0;
-	int yc_id = Yc_sn;
-	unsigned char framebuf[256];
-	unsigned short regAddr = PLC_PW_Addr[yc_id - 1];
-	unsigned char send_data = yc_data[yc_id].pcs_data[Active_power];
-	printf("regAddr:%d\n", regAddr);
-
-	framebuf[pos++] = g_num_frame / 256;
-	framebuf[pos++] = g_num_frame % 256;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 6;
-	framebuf[pos++] = 0x01; //设备地址
-	framebuf[pos++] = 0x06;
-	framebuf[pos++] = regAddr / 256;
-	framebuf[pos++] = regAddr % 256;
-	framebuf[pos++] = send_data / 256;
-	framebuf[pos++] = send_data % 256;
-
-	g_num_frame++;
-	if (g_num_frame == 0x10000)
-		g_num_frame = 1;
-
-	printf("向plc 发送数据:");
-	int i;
-	for (i = 0; i < pos; i++)
-	{
-		printf("%x ", framebuf[i]);
-	}
-	printf("\n");
-
-	if (send(modbus_client_sockptr[id_thread], framebuf, pos, 0) < 0)
-	{
-		printf("plc 发送失败！！！！id_thread=%d\n", id_thread);
-		return 0xffff;
-	}
-	else
-	{
-		wait_flag = 1;
-		printf("plc任务包发送成功！！！！\n");
-	}
-
-	return 0;
-}
-
-static int doStatusFun06Task(int id_thread, int *taskid)
-{
-	printf("\n\n");
-	printf("06 Status...\n");
-	int numTask = ARRAY_LEN(PLC_STATUS_Addr);
-	int pos = 0;
-	int _taskid = *taskid;
-	printf("taskid:%d\n", _taskid);
-	unsigned char status_Addr = PLC_STATUS_Addr[_taskid];
-	unsigned char framebuf[256];
-	unsigned short regAddr = status_Addr;
-	unsigned char send_data = 0;
-	printf("regAddr:%d\n", regAddr);
-
-	if (regAddr == 0x0028)
-	{
-		send_data = Yx_Pcs_Status;
-	}
-	else if (regAddr == 0x0029)
-	{
-	}
-	else if (regAddr == 0x002C)
-	{
-	}
-
-	framebuf[pos++] = g_num_frame / 256;
-	framebuf[pos++] = g_num_frame % 256;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 6;
-	framebuf[pos++] = 0x01; //设备地址
-	framebuf[pos++] = 0x06;
-	framebuf[pos++] = regAddr / 256;
-	framebuf[pos++] = regAddr % 256;
-	framebuf[pos++] = send_data / 256;
-	framebuf[pos++] = send_data % 256;
-
-	_taskid++;
-	if (_taskid >= numTask)
-		_taskid = 0;
-
-	g_num_frame++;
-	if (g_num_frame == 0x10000)
-		g_num_frame = 1;
-
-	printf("plc 任务包发送成功！！！！\n");
-	printf("pcl 发送数据:");
-	int i;
-	for (i = 0; i < pos; i++)
-	{
-		printf("%x ", framebuf[i]);
-	}
-	printf("\n");
-
-	if (send(modbus_client_sockptr[id_thread], framebuf, pos, 0) < 0)
-	{
-		printf("plc 发送失败！！！！id_thread=%d\n", id_thread);
-		return 0xffff;
-	}
-	else
-	{
-		wait_flag = 1;
-		printf("plc 任务包发送成功！！！！\n");
-	}
-
-	*taskid = _taskid;
-
-	return 0;
-}
-
-static int doFun03Tasks(int id_thread){
-	printf("\n\n");
-	printf("plc 03 YX\n");
-	int pos = 0;
-	unsigned char framebuf[256];
-	unsigned short regAddr = 0x002b;
-	unsigned char num = 1;
-
-	printf("regAddr:%d\n", regAddr);
-	framebuf[pos++] = g_num_frame / 256;
-	framebuf[pos++] = g_num_frame % 256;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 0;
-	framebuf[pos++] = 6;
-	framebuf[pos++] = 0x1; //设备地址
-	framebuf[pos++] = 0x03;
-	framebuf[pos++] = regAddr / 256;
-	framebuf[pos++] = regAddr % 256;
-	framebuf[pos++] = num / 256;
-	framebuf[pos++] = num % 256;
-
-	g_num_frame++;
-	if (g_num_frame == 0x10000)
-		g_num_frame = 1;
-
-	printf("向plc 发送数据:");
-	int i;
-	for (i = 0; i < pos; i++)
-	{
-		printf("%x ", framebuf[i]);
-	}
-	printf("\n");
-
-	if (send(modbus_client_sockptr[id_thread], framebuf, pos, 0) < 0)
-	{
-		printf("plc 发送失败！！！！id_thread=%d\n", id_thread);
-		return 0xffff;
-	}
-	else
-	{
-		wait_flag = 1;
-		printf("plc 任务包发送成功！！！！\n");
-	}
-}
-
-// void doFunTasks(int id_thread, int *taskid, int *send_flag)
-// {
-// 	int _send_flag = *send_flag ;
-// 	if (_send_flag == 0)
-// 	{
-// 		doPwFun06Task(id_thread);
-// 		*send_flag = 1;
-// 		continue;
-// 	}
-// 	else if (_send_flag == 1)
-// 	{
-// 		doStatusFun06Task(id_thread, taskid);
-// 		*send_flag = 2;
-// 		continue;
-// 	}
-// 	else if (send_flag == 2)
-// 	{
-// 		doFun03Tasks(id_thread);
-// 		*send_flag = 0;
-// 		continue;
-// 	}
-// }
 
 void *Modbus_clientSend_thread(void *arg) // 25
 {
@@ -290,10 +73,12 @@ void *Modbus_clientSend_thread(void *arg) // 25
 			if ((id_frame != 0xffff && (g_num_frame - 1) == id_frame) || (id_frame == 0xffff && g_num_frame == 1))
 			{
 				printf("recv form plc!!!!!g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
-				int res = 0;//= AnalysModbus(id_thread, pcsdata.buf, pcsdata.len);
-				// if(0 == res){
-				// 	printf("数据解析成功！！！\n");
-				// }
+				int res = AnalysModbus(id_thread, pcsdata.buf, pcsdata.len);
+				if(0 == res){
+					printf("数据解析成功！！！\n\n");
+				}else{
+					printf("\n\n\n");
+				}
 			}
 			else
 				printf("检查是否发生丢包现象！！！！！g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
@@ -323,7 +108,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 		}
 		else if (send_flag == 1)
 		{
-			doStatusFun06Task(id_thread, &curStatusTaskId);
+			doStatusFun06Task(id_thread);
 			send_flag = 2;
 			continue;
 		}
@@ -393,7 +178,6 @@ static int recvFrame(int fd, int qid, MyData *recvbuf)
 }
 
 //参数初始化
-
 void *Modbus_clientRecv_thread(void *arg) // 25
 {
 	int id_thread = (int)arg;
@@ -432,6 +216,8 @@ loop:
 
 	jj = 0; //未接收到数据累计标志，大于1000清零
 	i = 0;
+
+	subscribeFromLcd();
 
 	while (1)
 	{
@@ -486,7 +272,7 @@ loop:
 				}
 				else if (ret == 1)
 				{
-					//                 i++;
+					//i++;
 
 					// if(i>30)
 					// {
