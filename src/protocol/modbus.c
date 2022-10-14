@@ -6,7 +6,6 @@
 #include "modbus.h"
 #include "client.h"
 
-
 #include <string.h>
 #include "crc.h"
 #include "my_socket.h"
@@ -18,6 +17,7 @@
 #include <linux/rtc.h>
 #include "unistd.h"
 #include "stdlib.h"
+#include "plc_main.h"
 
 int curStatusTaskId = 0;
 short fun03_PlcData;
@@ -243,12 +243,12 @@ int AnalysModbus(int id_thread, unsigned char *pdata, int len)
         return 2;
     }
 
-    printf("需要解析的数据为:");
-    int i;
-    for(i=0;i<len;i++){
-        printf("%#x ",pdata);
-    }
-    printf("\n");
+    // printf("需要解析的数据为:");
+    // int i;
+    // for(i=0;i<len;i++){
+    //     printf("%#x ",pdata);
+    // }
+    // printf("\n");
 
     g_send_data[id_thread].flag_waiting = 0;
 
@@ -271,7 +271,7 @@ int AnalysModbus(int id_thread, unsigned char *pdata, int len)
     if (funid == 0x3)
     {
         fun03_PlcData = emudata[3] * 256 + emudata[4];
-        printf("fun03_PlcData:%d\n", fun03_PlcData);
+        pFun((void *)&fun03_PlcData);
     }
 
     return 0;

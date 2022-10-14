@@ -63,7 +63,6 @@ void subscribeFromLcd(void)
 	typedef int (*outData2Other)(unsigned char, void *);		   //输出数据
 	typedef int (*in_fun)(unsigned char type, outData2Other pfun); //命令处理函数指针
 	in_fun my_func = NULL;
-
 	//打开动态链接库
 
 	handle = dlopen(LIB_LCD_PATH, RTLD_LAZY);
