@@ -12,8 +12,12 @@
 #include <sys/msg.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
+#include "withLCD.h"
+#include "YX_Define.h"
+#include "YC_Define.h"
+#include "modbus.h"
 //当使用Modbus/TCP时，modbus poll一般模拟客户端，modbus slave一般模拟服务端
-int wait_flag = 0;
+
 char modbus_sockt_state[MAX_CONN_NUM];
 int modbus_client_sockptr[MAX_CONN_NUM];
 
@@ -21,15 +25,10 @@ MyData clent_data_temp[MAX_CONN_NUM];
 int g_comm_qmegid[MAX_CONN_NUM];
 
 unsigned short g_num_frame = 1;
-
+int wait_flag = 0;
 
 PARA_PLC Para_plc;
 PARA_PLC *pPara_plc = (PARA_PLC *)&Para_plc;
-void RunAccordingtoStatus(int id_thread)
-{
-
-
-}
 
 void *Modbus_clientSend_thread(void *arg) // 25
 {
@@ -42,7 +41,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 	int waittime = 0;
 	int id_frame;
 
-	printf("PCS[%d] Modbus_clientSend_thread  is Starting!\n", id_thread);
+	printf("PLC_clientSend_thread  is Starting!\n", id_thread);
 	key_t key = 0;
 	g_comm_qmegid[id_thread] = os_create_msgqueue(&key, 1);
 
@@ -55,6 +54,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 	}
 
 	wait_flag = 0;
+	int send_flag = 0;
 
 	// printf("modbus_sockt_state[id_thread] == STATUS_ON\n") ;
 	while (modbus_sockt_state[id_thread] == STATUS_ON) //
@@ -70,22 +70,32 @@ void *Modbus_clientSend_thread(void *arg) // 25
 
 			if ((id_frame != 0xffff && (g_num_frame - 1) == id_frame) || (id_frame == 0xffff && g_num_frame == 1))
 			{
-				printf("recv form pcs!!!!!g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
-				int res =0;//= AnalysModbus(id_thread, pcsdata.buf, pcsdata.len);
-				printf("****************res:%d\n",res);
-				if(0 == res){
-					printf("数据解析成功！！！\n");
+				printf("recv form plc!!!!!g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
+				int res = AnalysModbus(id_thread, pcsdata.buf, pcsdata.len);
+// <<<<<<< HEAD
+				if (0 == res)
+				{
+					printf("PLC 数据解析成功！！！\n\n");
+				}
+				else
+				{
+// =======
+// 				if(0 == res){
+// 					printf("PLC 数据解析成功！！！\n\n");
+// 				}else{
+// >>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
+					printf("\n\n\n");
 				}
 			}
 			else
-				printf("检查是否发生丢包现象！！！！！g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
+				printf("PLC 检查是否发生丢包现象！！！！！g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
 			wait_flag = 0;
 			continue;
 		}
 
-
 		if (wait_flag == 1)
 		{
+			// printf("wait...\n");
 			waittime++;
 			if (waittime == 1000)
 			{
@@ -94,12 +104,53 @@ void *Modbus_clientSend_thread(void *arg) // 25
 			}
 			continue;
 		}
-	
 
-		RunAccordingtoStatus(id_thread);
-			continue;
+		// int _send_flag = *send_flag;
+// <<<<<<< HEAD
+		// if (send_flag == 0)
+		// {
+		// doPwFun06Task(id_thread);
+		// 	send_flag = 1;
+		// }
+		// else if (send_flag == 1)
+		// {
+		doStatusFun06Task(id_thread);
+		// 	send_flag = 2;
+		// }
+		// else if (send_flag == 2)
+		// {
+		// 	doFun03Tasks(id_thread);
+		// 	send_flag = 0;
+		// }
+// =======
+// 		if (send_flag == 0)
+// 		{
+// 			doPwFun06Task(id_thread);
+// 			send_flag = 1;
+// 		}
+// 		else if (send_flag == 1)
+// 		{
+// 			doStatusFun06Task(id_thread);
+// 			send_flag = 2;	
+// 		}
+// 		else if (send_flag == 2)
+// 		{
+// 			doFun03Tasks(id_thread);
+// 			send_flag = 0;
+// 		}
+// >>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
 	}
 	return NULL;
+}
+
+int myprintbuf(int len, unsigned char *buf)
+{
+	int i = 0;
+	printf("\nbuflen=%d\n", len);
+	for (i = 0; i < len; i++)
+		printf("0x%x ", buf[i]);
+	printf("\n");
+	return 0;
 }
 
 static int recvFrame(int fd, int qid, MyData *recvbuf)
@@ -116,22 +167,21 @@ static int recvFrame(int fd, int qid, MyData *recvbuf)
 	//		printf("*****  F:%s L:%d recv readlen=%d\n", __FUNCTION__, __LINE__,	readlen);
 	if (readlen < 0)
 	{
-		printf("连接断开或异常\r\n");
+		printf("PLC 连接断开或异常\r\n");
 		return -1;
 	}
 	else if (readlen == 0)
 		return 1;
 
-	printf("收到一包数据 wait_flag=%d", wait_flag);
+	printf("PLC 收到一包数据 wait_flag=%d", wait_flag);
 	recvbuf->len = readlen;
 	myprintbuf(readlen, recvbuf->buf);
 	msg.msgtype = 1;
 	memcpy((char *)&msg.data, recvbuf->buf, readlen);
-	sleep(1);
 	if (msgsnd(qid, &msg, sizeof(msgClient), IPC_NOWAIT) != -1)
 	{
 
-		printf("succ succ succ succ !!!!!!!"); //连接主站的网络参数I
+		printf("PLC succ succ succ succ !!!!!!!"); //连接主站的网络参数I
 		return 0;
 	}
 	else
@@ -145,7 +195,6 @@ static int recvFrame(int fd, int qid, MyData *recvbuf)
 }
 
 //参数初始化
-
 void *Modbus_clientRecv_thread(void *arg) // 25
 {
 	int id_thread = (int)arg;
@@ -153,13 +202,16 @@ void *Modbus_clientRecv_thread(void *arg) // 25
 	fd_set maxFd;
 	struct timeval tv;
 	int ret;
+	int port = 10;
 	int i = 0, jj = 0;
 	MyData recvbuf;
 	printf("PCS[%d] Modbus_clientRecv_thread is Starting!\n", id_thread);
 	_SERVER_SOCKET server_sock;
 	server_sock.protocol = TCP;
-	server_sock.port = htons(pPara_plc->server_port[id_thread]);
-	server_sock.addr = inet_addr(pPara_plc->server_ip[id_thread]);
+
+	printf("PLC 设备:%d,ip：%s,端口:%d\n", Para_plc.conn_num, Para_plc.server_ip[0], Para_plc.server_port[0]);
+	server_sock.port = htons(Para_plc.server_port[0]);
+	server_sock.addr = inet_addr(Para_plc.server_ip[0]);
 	server_sock.fd = -1;
 
 	sleep(4);
@@ -174,13 +226,15 @@ loop:
 		else
 			break;
 	}
-	printf("连接服务器成功！！！！\n");
+	printf("PLC 连接服务器成功！！！！\n");
 
 	modbus_client_sockptr[id_thread] = server_sock.fd;
 	modbus_sockt_state[id_thread] = STATUS_ON;
 
 	jj = 0; //未接收到数据累计标志，大于1000清零
 	i = 0;
+
+	subscribeFromLcd();
 
 	while (1)
 	{
@@ -196,7 +250,7 @@ loop:
 		if (ret < 0)
 		{
 
-			printf("网络有问题！！！！！！！！！！！！");
+			printf("PLC 网络有问题！！！！！！！！！！！！");
 			break;
 		}
 		else if (ret == 0)
@@ -205,7 +259,7 @@ loop:
 
 			if (jj > 1000)
 			{
-				printf("暂时没有数据传入！！！！未接收到数据次数=%d！！！！！！！！！！！！！！！！\r\n", jj);
+				printf("PLC 暂时没有数据传入！！！！未接收到数据次数=%d！！！！！！！！！！！！！！！！\r\n", jj);
 				jj = 0;
 
 				//				break;
@@ -227,7 +281,7 @@ loop:
 
 					if (i > 30)
 					{
-						printf("接收不成功！！！！！！！！！！！！！！！！i=%d\r\n", i);
+						printf("PLC 接收不成功！！！！！！！！！！！！！！！！i=%d\r\n", i);
 						break;
 					}
 					else
@@ -235,7 +289,7 @@ loop:
 				}
 				else if (ret == 1)
 				{
-					//                 i++;
+					// i++;
 
 					// if(i>30)
 					// {
@@ -249,18 +303,18 @@ loop:
 				else
 				{
 					i = 0;
-					printf("接收成功！！！！！！！！！！！！！！！！wait_flag=%d modbus_sockt_state[id_thread]=%d\r\n", wait_flag, modbus_sockt_state[id_thread]);
+					printf("PLC 接收成功！！！！！！！！！！！！！！！！wait_flag=%d modbus_sockt_state[id_thread]=%d\r\n", wait_flag, modbus_sockt_state[id_thread]);
 				}
 			}
 			else
 			{
-				printf("未知错误////////////////////////////////r/n");
+				printf("PLC 未知错误////////////////////////////////r/n");
 				break;
 			}
 		}
 	}
 	modbus_sockt_state[id_thread] = STATUS_OFF;
-	printf("网络断开，重连！！！！");
+	printf("PLC 网络断开，重连！！！！");
 	goto loop;
 }
 
@@ -271,21 +325,22 @@ void CreateThreads(void)
 	int i;
 	// pPara_Modtcp->pcsnum[1] = 1;
 	// pPara_Modtcp->pcsnum[2] = 1;
+	printf("PLC 设备:%d,ip：%s,端口:%d\n", Para_plc.conn_num, Para_plc.server_ip[0], Para_plc.server_port[0]);
 
-	for (i = 0; i < pPara_plc->conn_num; i++)
+	for (i = 0; i < Para_plc.conn_num; i++)
 	{
 		modbus_sockt_state[i] = STATUS_OFF;
 		if (FAIL == CreateSettingThread(&ThreadID, &Thread_attr, (void *)Modbus_clientRecv_thread, (int *)i, 1, 1))
 		{
-			printf("MODBUS CONNECT THTREAD CREATE ERR!\n");
+			printf("PLC CONNECT THTREAD CREATE ERR!\n");
 
 			exit(1);
 		}
 		if (FAIL == CreateSettingThread(&ThreadID, &Thread_attr, (void *)Modbus_clientSend_thread, (int *)i, 1, 1))
 		{
-			printf("MODBUS THTREAD CREATE ERR!\n");
+			printf("PLC THTREAD CREATE ERR!\n");
 			exit(1);
 		}
 	}
-	printf("MODBUS THTREAD CREATE success!\n");
+	printf("PLC THTREAD CREATE success!\n");
 }
