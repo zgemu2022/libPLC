@@ -25,8 +25,8 @@ PcsData_send g_send_data[MAX_LCD_NUM];
 
 unsigned char PLC_PW_Addr[] =
 	{
-		0x0006, 0x0007, 0x0008, 0x0009, 0x000a,
-		0x000b, 0x000c, 0x000d, 0x000f, 0x0010,
+		0x0028, 0x0029,0x002a,0x002b,0x002c,0x002d,0x002e,
+		0x002a, 0x000b, 0x000d, 0x000f, 0x0010,
 		0x0011, 0x0012, 0x0013, 0x0014, 0x0015,
 		0x0016, 0x0017, 0x0018, 0x0019, 0x001a,
 		0x001b, 0x001c, 0x001d, 0x001e, 0x001f,
@@ -34,9 +34,10 @@ unsigned char PLC_PW_Addr[] =
 
 unsigned char PLC_STATUS_Addr[] =
 	{
+		0x0001,
+		0x0002,
 		0x0003,
-		0x0004,
-		0x0005};
+		0x0004};
 
 int doPwFun06Task(int id_thread)
 {
@@ -100,27 +101,33 @@ int doStatusFun06Task(int id_thread)
 	int pos = 0;
 	int _taskid = curStatusTaskId;
 	printf("taskid:%d\n", _taskid);
-	unsigned char status_Addr = PLC_STATUS_Addr[_taskid];
+	// unsigned char status_Addr = PLC_STATUS_Addr[_taskid]; 
+	 unsigned char status_Addr = PLC_STATUS_Addr[3];//测试
 	unsigned char framebuf[256];
 	unsigned short regAddr = status_Addr;
-	unsigned char send_data = 0;
+	unsigned short send_data = 0;
 	unsigned char dev_id = 0x01;
 
 	printf("Yx_Pcs_Status:%d\n", Yx_Pcs_Status);
 	printf("regAddr:%d\n", regAddr);
 
-	if (regAddr == 0x0003)
+	if (regAddr == 0x0002)
 	{
-		send_data = Yx_Pcs_Status;
+		// send_data = Yx_Pcs_Status;
+		send_data = MyConvert(0xff00);
+	}
+	else if (regAddr == 0x0003)
+	{
+		// send_data = Yx_Pcs_Status;
+		send_data = MyConvert(0xff00);
 	}
 	else if (regAddr == 0x0004)
 	{
-		send_data = Yx_Pcs_Status;
-	}
-	else if (regAddr == 0x0005)
-	{
-		send_data = Yx_Pcs_Status;
-		// send_data = MyConvert()
+		// send_data = Yx_Pcs_Status;
+		send_data = MyConvert(0xff00);
+	}else if(regAddr == 0x0001){
+		send_data = MyConvert(0x00ff);
+		printf("senddata:%d\n",send_data);
 	}
 
 	framebuf[pos++] = g_num_frame / 256;
@@ -175,7 +182,7 @@ int doFun03Tasks(int id_thread)
 	printf("plc 03 YX\n");
 	int pos = 0;
 	unsigned char framebuf[256];
-	unsigned short regAddr = 0x0001;
+	unsigned short regAddr = 0x0000;
 	unsigned char num = 1;
 	unsigned char dev_id = 0x01;
 

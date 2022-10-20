@@ -34,7 +34,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 {
 
 	int id_thread = (int)arg;
-
+	// printf("aaaaaaaaaaaoofoifdf %d\n",id_thread);
 	int ret_value = 0;
 	msgClient pmsg;
 	MyData pcsdata;
@@ -114,12 +114,12 @@ void *Modbus_clientSend_thread(void *arg) // 25
 		// }
 		// else if (send_flag == 1)
 		// {
-		doStatusFun06Task(id_thread);
+		// doStatusFun06Task(id_thread);
 		// 	send_flag = 2;
 		// }
 		// else if (send_flag == 2)
 		// {
-		// 	doFun03Tasks(id_thread);
+			doFun03Tasks(id_thread);
 		// 	send_flag = 0;
 		// }
 // =======
