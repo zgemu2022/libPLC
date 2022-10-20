@@ -72,12 +72,18 @@ void *Modbus_clientSend_thread(void *arg) // 25
 			{
 				printf("recv form plc!!!!!g_num_frame=%d  id_frame=%d\n", g_num_frame, id_frame);
 				int res = AnalysModbus(id_thread, pcsdata.buf, pcsdata.len);
+// <<<<<<< HEAD
 				if (0 == res)
 				{
 					printf("PLC 数据解析成功！！！\n\n");
 				}
 				else
 				{
+// =======
+// 				if(0 == res){
+// 					printf("PLC 数据解析成功！！！\n\n");
+// 				}else{
+// >>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
 					printf("\n\n\n");
 				}
 			}
@@ -100,6 +106,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 		}
 
 		// int _send_flag = *send_flag;
+// <<<<<<< HEAD
 		// if (send_flag == 0)
 		// {
 		// doPwFun06Task(id_thread);
@@ -115,6 +122,23 @@ void *Modbus_clientSend_thread(void *arg) // 25
 		// 	doFun03Tasks(id_thread);
 		// 	send_flag = 0;
 		// }
+// =======
+// 		if (send_flag == 0)
+// 		{
+// 			doPwFun06Task(id_thread);
+// 			send_flag = 1;
+// 		}
+// 		else if (send_flag == 1)
+// 		{
+// 			doStatusFun06Task(id_thread);
+// 			send_flag = 2;	
+// 		}
+// 		else if (send_flag == 2)
+// 		{
+// 			doFun03Tasks(id_thread);
+// 			send_flag = 0;
+// 		}
+// >>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
 	}
 	return NULL;
 }

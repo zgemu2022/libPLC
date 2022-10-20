@@ -244,12 +244,14 @@ int AnalysModbus(int id_thread, unsigned char *pdata, int len)
 		return 2;
 	}
 
-	// printf("需要解析的数据为:");
-	// int i;
-	// for(i=0;i<len;i++){
-	//     printf("%#x ",pdata);
-	// }
-	// printf("\n");
+
+    // printf("需要解析的数据为:");
+    // int i;
+    // for(i=0;i<len;i++){
+    //     printf("%#x ",pdata);
+    // }
+    // printf("\n");
+
 
 	g_send_data[id_thread].flag_waiting = 0;
 
@@ -269,11 +271,19 @@ int AnalysModbus(int id_thread, unsigned char *pdata, int len)
 		}
 	}
 
+// <<<<<<< HEAD
 	if (funid == 0x3)
 	{
 		fun03_PlcData = emudata[3] * 256 + emudata[4];
 		pFun((void *)&fun03_PlcData);
 	}
+// =======
+//     if (funid == 0x3)
+//     {
+//         fun03_PlcData = emudata[3] * 256 + emudata[4];
+//         pFun((void *)&fun03_PlcData);
+//     }
+// >>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
 
 	return 0;
 }

@@ -9,9 +9,13 @@
 		"stdio.h": "c",
 		"my_socket.h": "c",
 		"inet.h": "c",
+<<<<<<< HEAD
 		"modbus.h": "c",
 		"interface.h": "c",
 		"yc_define.h": "c"
+=======
+		"modbus.h": "c"
+>>>>>>> 015db44a32471e447303fb375f2024d6389b8aa9
 	},
 	"C_Cpp.errorSquiggles": "Disabled"
 }
