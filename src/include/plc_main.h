@@ -8,4 +8,7 @@ typedef struct
 	char  server_ip[MAX_CONN_NUM][64];
 	unsigned short server_port[MAX_CONN_NUM];
 } PARA_PLC; //从主控传到plc模块的结构1
+
+typedef int (*outData2Other)(void *pdata); //输出数据
+outData2Other pFun;
 #endif

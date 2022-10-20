@@ -8,7 +8,10 @@
 		"socket.h": "c",
 		"stdio.h": "c",
 		"my_socket.h": "c",
-		"inet.h": "c"
+		"inet.h": "c",
+		"modbus.h": "c",
+		"interface.h": "c",
+		"yc_define.h": "c"
 	},
 	"C_Cpp.errorSquiggles": "Disabled"
 }

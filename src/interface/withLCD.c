@@ -10,7 +10,14 @@
 // LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
 int Yc_sn;
 short Yc_PW_Data[MAX_TOTAL_PCS_NUM]; //
-unsigned int Yx_Pcs_Status = 0;
+// unsigned int Yx_Pcs_Status = 0; 
+unsigned short Yx_Pcs_Status = 0;  //测试代码
+unsigned char xxxa[] = {0x0, 0xfc, 0x0, 0xfe, 0x0, 0xfd, 0x0, 0x20, 0x1b, 0x2, 0x1b, 0x27};
+
+unsigned short MyConvert(unsigned short sval)
+{  
+    return ((sval&0x00ff)<<8)  + ((sval&0xff00)>>8);
+}
 
 int recvfromlcd(unsigned char type, void *pdata)
 {
@@ -20,8 +27,16 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		LCD_YC_YX_DATA temp;
 		temp = *(LCD_YC_YX_DATA *)pdata;
-		Yc_PW_Data[temp.sn] = temp.pcs_data[Active_power];
+		// Yc_PW_Data[temp.sn] = temp.pcs_data[Active_power];
+		// memcpy(&Yc_PW_Data[0], &xxxa[0], sizeof(xxxa));
 		Yc_sn = temp.sn;
+		Yc_PW_Data[0] = 15;
+		Yc_PW_Data[1] = 20;
+		Yc_PW_Data[2] = 26;
+		Yc_PW_Data[3] = 28;
+		Yc_PW_Data[4] = 30;
+		Yc_PW_Data[5] = 31;
+
 		// yc_data[temp.sn] = temp;
 	}
 	break;
@@ -29,6 +44,7 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		unsigned char b, b1, b2;
 		LCD_YC_YX_DATA temp;
+
 		temp = *(LCD_YC_YX_DATA *)pdata;
 		b = temp.pcs_data[0];
 		b1 = b & (1 << bPcsRunning);
@@ -38,20 +54,29 @@ int recvfromlcd(unsigned char type, void *pdata)
 			if (b & (1 << bPcsRunning))
 			{
 				setbit(Yx_Pcs_Status, (32 - temp.sn));
-				//Yx_Pcs_Status |= (1<<(32-temp.sn));
+				// Yx_Pcs_Status |= (1<<(32-temp.sn));
 			}
 			else
 			{
 				clrbit(Yx_Pcs_Status, (32 - temp.sn));
 			}
 		}
+
+
+		//以下均是测试代码
+		unsigned short sval = 0x1001;
+    	// printf("%d,0x%X\n", sval, sval);
+    	Yx_Pcs_Status = MyConvert(sval);
+		// Yx_Pcs_Status = 255;
+
+		
 	}
 	break;
 
-default:
-	break;
-}
-return 0;
+	default:
+		break;
+	}
+	return 0;
 }
 
 void subscribeFromLcd(void)
@@ -63,7 +88,6 @@ void subscribeFromLcd(void)
 	typedef int (*outData2Other)(unsigned char, void *);		   //输出数据
 	typedef int (*in_fun)(unsigned char type, outData2Other pfun); //命令处理函数指针
 	in_fun my_func = NULL;
-
 	//打开动态链接库
 
 	handle = dlopen(LIB_LCD_PATH, RTLD_LAZY);
