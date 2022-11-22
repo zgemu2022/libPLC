@@ -8,18 +8,8 @@ typedef struct
 	int pcsid;
 	unsigned short pcs_data[MAX_YCDATA_NUM];
 	unsigned char data_len;
-}LCD_YC_YX_DATA;//
-typedef struct
-{
-	int pcsnum;
+} LCD_YC_YX_DATA; //
 
-}LCD_PARA;//
-
-// extern LCD_YC_YX_DATA yc_data[MAX_TOTAL_PCS_NUM];
-unsigned short MyConvert(unsigned short sval); //测试用
-
-extern short Yc_PW_Data[]; //
-extern int Yc_sn;
-// extern unsigned int Yx_Pcs_Status;
-extern unsigned short Yx_Pcs_Status; // 测试代码
+extern unsigned char flag_RecvNeed_PCS[];
+void subscribeFromLcd(void);
 #endif
