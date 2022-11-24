@@ -10,7 +10,12 @@
 #include "modbus.h"
 #include "plc_main.h"
 
-unsigned char flag_RecvNeed_PCS[MAX_PCS_NUM];
+unsigned short flag_RecvNeed_PCS[3];
+
+unsigned short HL_BitConvert(unsigned short sval)
+{
+	return ((sval & 0x00ff) << 8) + ((sval & 0xff00) >> 8);
+}
 
 int recvfromlcd(unsigned char type, void *pdata)
 {
@@ -43,55 +48,81 @@ int recvfromlcd(unsigned char type, void *pdata)
 	break;
 	case _YX_:
 	{
-		static unsigned char flag_recv_pcs[] = {0, 0, 0, 0, 0, 0};
-		static unsigned char outdata[] = {0, 0, 0, 0, 0, 0};
+		static unsigned short flag_recv_pcs[] = {0, 0, 0};
+		static unsigned short outdata[] = {0, 0, 0};
 		unsigned short b;
 		LCD_YC_YX_DATA temp;
 		int val;
 		int flag = 0;
 		unsigned short regAddr;
 		temp = *(LCD_YC_YX_DATA *)pdata;
+		int sn,id;
+		sn=temp.lcdid*6+temp.pcsid-1;
+        if(sn>=0 && sn<16)
+		{
+			id=0;
+			
+		}
+		else if(sn>16 && sn<32)
+		{
+			id=1;
+			sn-=16;
+		}
+		else
+		{
+			id=2;
+			sn-=32;
+		}
 		// b = temp.pcs_data[u16_InvRunState1];
 		b = temp.pcs_data[u16_InvRunState1] & (1 << bPcsRunning);
+		// printf("PCSid:%d ")
 		if (b > 0)
 		{
-			outdata[temp.lcdid] |= (1 << (temp.pcsid - 1));
+			outdata[id] |= (1 << sn);
 		}
 
-		flag_recv_pcs[temp.lcdid] |= (1 << (temp.pcsid - 1));
+		flag_recv_pcs[id] |= (1 << sn);
 
-		if (temp.lcdid == 0 || temp.lcdid == 1)
+		if (id==0)
 		{
 
-			if ((flag_recv_pcs[0] == flag_RecvNeed_PCS[0]) && (flag_recv_pcs[1] == flag_RecvNeed_PCS[1]))
+			if (flag_recv_pcs[0] == flag_RecvNeed_PCS[0])
 			{
-				val = outdata[1] * 256 + outdata[0];
+				val = HL_BitConvert(outdata[0]);
+				printf("0-1 val :%x\n",val);
 				regAddr = 2;
 				flag = 1;
 			}
 		}
-		else if (temp.lcdid == 2 || temp.lcdid == 3)
+		else if (id==1)
 		{
-			if ((flag_recv_pcs[2] == flag_RecvNeed_PCS[2]) && (flag_recv_pcs[3] == flag_RecvNeed_PCS[3]))
+			if (flag_recv_pcs[1] == flag_RecvNeed_PCS[1])
 			{
-				val = outdata[3] * 256 + outdata[2];
+				val = HL_BitConvert(outdata[1]);
+				printf("2-4 val :%x\n", val);
 				regAddr = 3;
 				flag = 1;
 			}
 		}
-		else if (temp.lcdid == 4 || temp.lcdid == 5)
+		else if (id==2)
 		{
-			if ((flag_recv_pcs[4] == flag_RecvNeed_PCS[4]) && (flag_recv_pcs[5] == flag_RecvNeed_PCS[5]))
-			{
-				val = outdata[5] * 256 + outdata[4];
-				regAddr = 4;
-				flag = 1;
-			}
+			if (flag_recv_pcs[2] == flag_RecvNeed_PCS[2])
+			
+				{
+					val = HL_BitConvert(outdata[2]);
+					printf("-4 val :%x\n", val);
+					regAddr = 4;
+					flag = 1;
+				}
 		}
 		else
 			printf("PLC接收遥信数据出现错误！！\n");
-		if (flag == 1)
+		if (flag == 1){
 			SendLcdDataToThread(regAddr, val);
+			flag_recv_pcs[id]=0;
+			outdata[id]=0;
+		}
+			
 	}
 	break;
 
