@@ -9,7 +9,7 @@ typedef struct
 	unsigned short pcs_data[MAX_YCDATA_NUM];
 	unsigned char data_len;
 } LCD_YC_YX_DATA; //
-
-extern unsigned char flag_RecvNeed_PCS[];
+extern unsigned short HL_BitConvert(unsigned short sval);
+extern unsigned short flag_RecvNeed_PCS[];
 void subscribeFromLcd(void);
 #endif

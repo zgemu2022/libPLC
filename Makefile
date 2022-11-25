@@ -39,6 +39,7 @@ all:$(OBJS) libplc.so
 #编译完成后的拷贝的路径
 	-cp libplc.so  /mnt/hgfs/Tcu_lib/libplc.so;
 #	-cp libplc.so  /mnt/hgfs/share_E/zgEMU/Program/libplc.so;
+#	-cp libplc.so  /media/sf_work/zgEMU/Program/libplc.so;
 
 libplc.so: $(OBJS)
 	@echo "54321 xxxxx"
