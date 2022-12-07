@@ -356,12 +356,31 @@ void CreateThreads(void)
 	printf("PLC 设备:,ip：%s,端口:%d\n", Para_plc.server_ip, Para_plc.server_port);
 
 	modbus_sockt_state = STATUS_OFF;
-	int i;
+	int i,j,sn;
 
 	for (i = 0; i < Para_plc.lcdnum; i++)
 	{
 		if (Para_plc.pcsnum[i] > 0)
-			flag_RecvNeed_PCS[i] = countRecvFlag(Para_plc.pcsnum[i]);
+		{
+			for(j=0;j<Para_plc.pcsnum[i];j++)
+			{
+				sn=i*6+j;
+				if(sn>=0 && sn<16)
+				{
+                    flag_RecvNeed_PCS[0] |= (1<<sn);
+				}
+				else if(sn>=16 && sn<32)
+				{
+                    flag_RecvNeed_PCS[1] |= (1<<sn);
+				}
+				else
+				{
+                    flag_RecvNeed_PCS[2] |= (1<<sn);
+				}
+
+			}
+		}
+			
 	}
 
 	if (FAIL == CreateSettingThread(&ThreadID, &Thread_attr, (void *)Modbus_clientRecv_thread, NULL, 1, 1))

@@ -20,7 +20,7 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		LCD_YC_YX_DATA temp;
 		temp = *(LCD_YC_YX_DATA *)pdata;
-		int pw, qw, aw;
+		short pw, qw, aw;
 		int sn = 0;
 		unsigned short temp_pw, temp_qw, temp_aw;
 		temp_pw = temp.pcs_data[Active_power];
@@ -43,47 +43,65 @@ int recvfromlcd(unsigned char type, void *pdata)
 	break;
 	case _YX_:
 	{
-		static unsigned char flag_recv_pcs[] = {0, 0, 0, 0, 0, 0};
-		static unsigned char outdata[] = {0, 0, 0, 0, 0, 0};
+		static unsigned char flag_recv_pcs[] = {0, 0, 0};
+		static unsigned short outdata[] = {0, 0, 0};
 		unsigned short b;
 		LCD_YC_YX_DATA temp;
 		int val;
 		int flag = 0;
+		int id
 		unsigned short regAddr;
 		temp = *(LCD_YC_YX_DATA *)pdata;
+		int sn ;
+		sn=temp.lcdid*6+temp.pcsid - 1;
+
+		if(sn>=0 && sn<16)
+		{
+			id=0;
+		}
+		else if(sn>=16 && sn<32)
+		{
+			id=1;
+			sn-=16;
+		}
+		else
+		{
+			id=2;
+			sn-=32;
+		}
 		// b = temp.pcs_data[u16_InvRunState1];
 		b = temp.pcs_data[u16_InvRunState1] & (1 << bPcsRunning);
 		if (b > 0)
 		{
-			outdata[temp.lcdid] |= (1 << (temp.pcsid - 1));
+			outdata[id] |= (1 << sn);
 		}
 
-		flag_recv_pcs[temp.lcdid] |= (1 << (temp.pcsid - 1));
+		flag_recv_pcs[id] |= (1 << sn);
 
-		if (temp.lcdid == 0 || temp.lcdid == 1)
+		if (id==0)
 		{
 
-			if ((flag_recv_pcs[0] == flag_RecvNeed_PCS[0]) && (flag_recv_pcs[1] == flag_RecvNeed_PCS[1]))
+			if (flag_recv_pcs[0] == flag_RecvNeed_PCS[0])
 			{
-				val = outdata[1] * 256 + outdata[0];
+				val = outdata[0];
 				regAddr = 2;
 				flag = 1;
 			}
 		}
-		else if (temp.lcdid == 2 || temp.lcdid == 3)
+		else if (id==1)
 		{
-			if ((flag_recv_pcs[2] == flag_RecvNeed_PCS[2]) && (flag_recv_pcs[3] == flag_RecvNeed_PCS[3]))
+			if (flag_recv_pcs[1] == flag_RecvNeed_PCS[1])
 			{
-				val = outdata[3] * 256 + outdata[2];
+				val = outdata[1];
 				regAddr = 3;
 				flag = 1;
 			}
 		}
-		else if (temp.lcdid == 4 || temp.lcdid == 5)
+		else if (id==2)
 		{
-			if ((flag_recv_pcs[4] == flag_RecvNeed_PCS[4]) && (flag_recv_pcs[5] == flag_RecvNeed_PCS[5]))
+			if (flag_recv_pcs[2] == flag_RecvNeed_PCS[2])
 			{
-				val = outdata[5] * 256 + outdata[4];
+				val = outdata[2];
 				regAddr = 4;
 				flag = 1;
 			}
