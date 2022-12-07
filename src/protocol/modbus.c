@@ -45,7 +45,7 @@ int AnalysModbus(unsigned char *pdata, int len)
 			pPara_plc->funOrder(order);
 		if(pbackBmsFun_YX!=NULL)
 		{
-			data=0xff0f;
+			//data=0xff0f;
 			pbackBmsFun_YX(0,(void*)&data);
 		}
 
@@ -62,6 +62,7 @@ int SendBmsDataToThread(unsigned char order)
 	PcsData_send datasend;
 	datasend.dev_id = 0x01;
 	datasend.regaddr = 0x0001;
+	printf("=== order:%d ===\n",order);
 
 	unsigned short val = 0;
 	switch (order)
@@ -90,7 +91,8 @@ int SendBmsDataToThread(unsigned char order)
 	}
     if(val==0)
 		return 1;
-	datasend.val = val;
+	datasend.val = HL_BitConvert(val);
+
 	datasend.regaddr = 0x0001;
 	msg.msgtype = 2;
 	memcpy(data.buf, (unsigned char *)&datasend, sizeof(PcsData_send));
@@ -98,7 +100,7 @@ int SendBmsDataToThread(unsigned char order)
 	memcpy((char *)&msg.data, (char *)&data, sizeof(MyData));
 	if (msgsnd(g_comm_qmegid_plc, &msg, sizeof(msgClient), IPC_NOWAIT) != -1)
 	{
-		printf("22PLC send data to socket task succ  regAddr=%d val=%d!!!!!!!\n",datasend.regaddr, val);
+		printf("33PLC send data to socket task succ  regAddr=%d val=%d!!!!!!!\n",datasend.regaddr, val);
 		return 0;
 	}
 	else
@@ -115,6 +117,7 @@ int SendLcdDataToThread(unsigned short regAddr, unsigned short val)
 	datasend.dev_id = 0x01;
 	datasend.regaddr = regAddr;
 	datasend.val = val;
+	// printf("val");
 	msg.msgtype = 2;
 	memcpy(data.buf, (unsigned char *)&datasend, sizeof(PcsData_send));
 	data.len = sizeof(PcsData_send);

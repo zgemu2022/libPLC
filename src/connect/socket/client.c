@@ -367,20 +367,18 @@ void CreateThreads(void)
 				sn=i*6+j;
 				if(sn>=0 && sn<16)
 				{
-                    flag_RecvNeed_PCS[0] |= (1<<sn);
+					flag_RecvNeed_PCS[0] |= (1<<sn);
 				}
-				else if(sn>=16 && sn<32)
+				else if(sn>16 && sn<32)
 				{
-                    flag_RecvNeed_PCS[1] |= (1<<sn);
+					flag_RecvNeed_PCS[1] |= (1 << (sn-16));
 				}
-				else
-				{
-                    flag_RecvNeed_PCS[2] |= (1<<sn);
+				else{
+					flag_RecvNeed_PCS[2] |= (1 << (sn - 32));
 				}
-
 			}
 		}
-			
+
 	}
 
 	if (FAIL == CreateSettingThread(&ThreadID, &Thread_attr, (void *)Modbus_clientRecv_thread, NULL, 1, 1))
