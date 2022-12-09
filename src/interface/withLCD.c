@@ -38,9 +38,9 @@ int recvfromlcd(unsigned char type, void *pdata)
 
 		temp_aw = temp.pcs_data[Apparent_power];
 		aw = (temp_aw % 256) * 256 + temp_aw / 256;
-		printf("1PLC收到的有功功率 lcdid=%d pcsid=%d pw=%d %x\n", temp.lcdid, temp.pcsid, pw, temp_pw);
-		printf("2PLC收到的无功功率 lcdid=%d pcsid=%d qw=%d %x\n", temp.lcdid, temp.pcsid, qw, temp_qw);
-		printf("3PLC收到的视在功率 lcdid=%d pcsid=%d aw=%d %x \n", temp.lcdid, temp.pcsid, aw, temp_aw);
+		printf("1PLC收到的有功功率 lcdid=%d pcsid=%d pw=%hd %hx\n", temp.lcdid, temp.pcsid, pw, temp_pw);
+		printf("2PLC收到的无功功率 lcdid=%d pcsid=%d qw=%hd %hx\n", temp.lcdid, temp.pcsid, qw, temp_qw);
+		printf("3PLC收到的视在功率 lcdid=%d pcsid=%d aw=%hd %hx \n", temp.lcdid, temp.pcsid, aw, temp_aw);
 		sn = temp.lcdid * 6 + temp.pcsid - 1;
 
 		SendLcdDataToThread(sn + 5, pw);
