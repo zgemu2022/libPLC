@@ -25,9 +25,9 @@ int recvfromlcd(unsigned char type, void *pdata)
 	{
 		LCD_YC_YX_DATA temp;
 		temp = *(LCD_YC_YX_DATA *)pdata;
-		short pw, qw, aw;
+		short pw, qw, aw, tw;
 		int sn = 0;
-		unsigned short temp_pw, temp_qw, temp_aw;
+		unsigned short temp_pw, temp_qw, temp_aw, temp_tw;
 		temp_pw = temp.pcs_data[Active_power];
 		pw = (temp_pw % 256) * 256 + temp_pw / 256;
 
@@ -38,12 +38,16 @@ int recvfromlcd(unsigned char type, void *pdata)
 
 		temp_aw = temp.pcs_data[Apparent_power];
 		aw = (temp_aw % 256) * 256 + temp_aw / 256;
+		temp_tw = temp.pcs_data[Temperature_IGBT];
+		tw = (temp_tw % 256) * 256 + temp_tw / 256;
 		printf("1PLC收到的有功功率 lcdid=%d pcsid=%d pw=%hd %hx\n", temp.lcdid, temp.pcsid, pw, temp_pw);
 		printf("2PLC收到的无功功率 lcdid=%d pcsid=%d qw=%hd %hx\n", temp.lcdid, temp.pcsid, qw, temp_qw);
 		printf("3PLC收到的视在功率 lcdid=%d pcsid=%d aw=%hd %hx \n", temp.lcdid, temp.pcsid, aw, temp_aw);
+		printf("4PLC收到的IGBT温度 lcdid=%d pcsid=%d aw=%hd %hx \n", temp.lcdid, temp.pcsid, tw, temp_tw);
 		sn = temp.lcdid * 6 + temp.pcsid - 1;
 
 		SendLcdDataToThread(sn + 5, pw);
+		SendLcdDataToThread(sn + 53, tw);
 	}
 	break;
 	case _YX_:
