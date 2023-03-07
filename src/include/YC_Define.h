@@ -16,6 +16,7 @@
 #define Active_power 11	  // 0x110B	"交流有功功率 int16	0.1kW 正为放电，负为充电
 #define Reactive_power 12 // 0x110C	"交流无功功率 int16	0.1kVar 正为感性，负为容性
 #define Apparent_power 13 // 0x110D	"交流视在功率 int16	0.1kVA
+#define Temperature_IGBT 18 //0x1112 "IGBT温度值 int16 0.1℃"
 
 #define DC_Bus_voltage_zj 0		  // 0x1174	  "母线电压"	整机	int16	0.1 V	R
 #define DC_Bus_current_zj 1		  // 0x1075    "母线电流"	整机	int16	0.1A	R
