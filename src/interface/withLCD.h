@@ -11,5 +11,9 @@ typedef struct
 } LCD_YC_YX_DATA; //
 extern unsigned short HL_BitConvert(unsigned short sval);
 extern unsigned short flag_RecvNeed_PCS[];
+extern int total_pcsnum;
+
+unsigned int countRecvFlag(int num_read);
+
 void subscribeFromLcd(void);
 #endif

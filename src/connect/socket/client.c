@@ -28,10 +28,13 @@ unsigned short g_num_frame = 1;
 PARA_PLC Para_plc;
 PARA_PLC *pPara_plc = (PARA_PLC *)&Para_plc;
 int wait_flag = 0;
+
+int total_pcsnum = 0;
+
 int myprintbuf(int len, unsigned char *buf)
 {
 	int i = 0;
-	printf("\n PLC buflen=%d\n", len);
+	printf("\n plc模块 buflen=%d\n", len);
 	for (i = 0; i < len; i++)
 		printf("0x%x ", buf[i]);
 	printf("\n");
@@ -40,14 +43,13 @@ int myprintbuf(int len, unsigned char *buf)
 int doFun03Tasks(void)
 {
 	printf("\n\n");
-	printf("plc 03 YX\n");
+	printf("plc模块 03功能码 遥信\n");
 	int pos = 0;
 	unsigned char framebuf[256];
 	unsigned short regAddr = 0x0000;
 	unsigned char num = 1;
 	unsigned char dev_id = 0x01;
 
-	printf("regAddr:%d\n", regAddr);
 	framebuf[pos++] = g_num_frame / 256;
 	framebuf[pos++] = g_num_frame % 256;
 	framebuf[pos++] = 0;
@@ -61,12 +63,12 @@ int doFun03Tasks(void)
 	framebuf[pos++] = num / 256;
 	framebuf[pos++] = num % 256;
 
-	printf("03向plc 发送数据:");
+	printf("plc模块 03向plc 发送数据:");
 	myprintbuf(pos, framebuf);
 
 	if (send(modbus_client_sockptr, framebuf, pos, 0) < 0)
 	{
-		printf("plc 发送失败！！！！\n");
+		printf("plc模块 03功能码 发送失败！！！！\n");
 		return 0xffff;
 	}
 	else
@@ -76,7 +78,7 @@ int doFun03Tasks(void)
 		if (g_num_frame == 0x10000)
 			g_num_frame = 1;
 		wait_flag = 1;
-		printf("plc 03任务包发送成功！！！！\n");
+		printf("plc模块 03任务包发送成功！！！！\n");
 	}
 	return 0;
 }
@@ -105,12 +107,12 @@ int CreateFun06Frame(unsigned char dev_id, unsigned short regAddr, unsigned shor
 	// if (g_num_frame == 0x10000)
 	// 	g_num_frame = 1;
 
-	printf("06向plc 发送数据:dev_id=%d regAddr=%x  val=%x\n", dev_id, regAddr, val);
+	printf("plc模块 06功能码 发送数据:dev_id=%d regAddr=%x  val=%x\n", dev_id, regAddr, val);
 	myprintbuf(pos, framebuf);
 
 	if (send(modbus_client_sockptr, framebuf, pos, 0) < 0)
 	{
-		printf("plc 发送失败！！！！\n");
+		printf("plc模块 06功能码 发送失败！！！！\n");
 		return 0xffff;
 	}
 	else
@@ -120,7 +122,7 @@ int CreateFun06Frame(unsigned char dev_id, unsigned short regAddr, unsigned shor
 		if (g_num_frame == 0x10000)
 			g_num_frame = 1;
 		wait_flag = 1;
-		printf("plc 06 任务包发送成功！！！！\n");
+		printf("plc模块 06功能码 任务包发送成功！！！！\n");
 	}
 
 	return 0;
@@ -140,13 +142,14 @@ void *Modbus_clientSend_thread(void *arg) // 25
 
 	// unsigned char code_fun[] = {0x03, 0x06, 0x10};
 	// unsigned char errid_fun[] = {0x83, 0x86, 0x90};
+	// sleep(10);
 
 	while (modbus_sockt_state == STATUS_OFF)
 	{
 		sleep(1);
 	}
 
-	printf("modbus_sockt_state[id_thread] == STATUS_ON\n");
+	// printf(" modbus_sockt_state[id_thread] == STATUS_ON\n");
 	while (modbus_sockt_state == STATUS_ON) //
 	{
 		// printf("wait_flag:%d\n", wait_flag);
@@ -154,7 +157,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 		{
 			usleep(10);
 		}
-		ret_value = os_rev_msgqueue(g_comm_qmegid_plc, &pmsg, sizeof(msgClient), 0, 8); // 50ms
+		ret_value = os_rev_msgqueue(g_comm_qmegid_plc, &pmsg, sizeof(msgClient), 0, 500); // 50ms
 		if (ret_value >= 0)
 		{
 			memcpy((char *)&plcdata, (char *)&pmsg.data, sizeof(MyData));
@@ -169,7 +172,7 @@ void *Modbus_clientSend_thread(void *arg) // 25
 			{
 				delayTim=0;
 
-				printf("PLC 暂无数据发送 执行功能码03！！！！！g_num_frame=%x \n", g_num_frame);
+				printf("plc模块 暂无数据发送 执行功能码03！！！！！g_num_frame=%x \n", g_num_frame);
 				doFun03Tasks();
 			//	usleep(5);
 			}
@@ -216,12 +219,11 @@ void *Modbus_clientRecv_thread(void *arg) // 25
 	_SERVER_SOCKET server_sock;
 	server_sock.protocol = TCP;
 
-	printf("PLC 设备: ip：%s,端口:%d\n", Para_plc.server_ip, Para_plc.server_port);
+	printf("plc模块 设备: ip：%s,端口:%d\n", Para_plc.server_ip, Para_plc.server_port);
 	server_sock.port = htons(Para_plc.server_port);
 	server_sock.addr = inet_addr(Para_plc.server_ip);
 	server_sock.fd = -1;
 
-	sleep(4);
 loop:
 	while (1)
 	{
@@ -233,7 +235,7 @@ loop:
 		else
 			break;
 	}
-	printf("PLC 连接服务器成功！！！！\n");
+	printf("plc模块 连接服务器成功！！！！\n");
 
 	modbus_client_sockptr = server_sock.fd;
 	modbus_sockt_state = STATUS_ON;
@@ -256,7 +258,7 @@ loop:
 		if (ret < 0)
 		{
 
-			printf("PLC 网络有问题！！！！！！！！！！！！");
+			printf("plc模块 网络有问题！！！！！！！！！！！！");
 			break;
 		}
 		else if (ret == 0)
@@ -265,7 +267,7 @@ loop:
 
 			if (jj > 1000)
 			{
-				printf("PLC 暂时没有数据传入！！！！未接收到数据次数=%d！！！！！！！！！！！！！！！！\r\n", jj);
+				printf("plc模块 暂时没有数据传入！！！！未接收到数据次数=%d！！！！！！！！！！！！！！！！\r\n", jj);
 				jj = 0;
 
 				//				break;
@@ -287,7 +289,7 @@ loop:
 
 					if (i > 30)
 					{
-						printf("PLC 接收不成功！！！！！！！！！！！！！！！！i=%d\r\n", i);
+						printf("plc模块 接收不成功！！！！！！！！！！！！！！！！i=%d\r\n", i);
 						break;
 					}
 					else
@@ -347,39 +349,41 @@ unsigned int countRecvFlag(int num_read)
 	}
 	return flag;
 }
+
 void CreateThreads(void)
 {
 	pthread_t ThreadID;
 	pthread_attr_t Thread_attr;
 	// pPara_Modtcp->pcsnum[1] = 1;
 	// pPara_Modtcp->pcsnum[2] = 1;
-	printf("PLC 设备:,ip：%s,端口:%d\n", Para_plc.server_ip, Para_plc.server_port);
+	printf("plc模块 设备:,ip：%s,端口:%d\n", Para_plc.server_ip, Para_plc.server_port);
+
 
 	modbus_sockt_state = STATUS_OFF;
-	int i,j,sn;
+	// int i,j,sn;
+	// for (i = 0; i < Para_plc.lcdnum; i++)
+	// {
 
-	for (i = 0; i < Para_plc.lcdnum; i++)
-	{
-		if (Para_plc.pcsnum[i] > 0)
-		{
-			for(j=0;j<Para_plc.pcsnum[i];j++)
-			{
-				sn=i*6+j;
-				if(sn>=0 && sn<16)
-				{
-					flag_RecvNeed_PCS[0] |= (1<<sn);
-				}
-				else if(sn>16 && sn<32)
-				{
-					flag_RecvNeed_PCS[1] |= (1 << (sn-16));
-				}
-				else{
-					flag_RecvNeed_PCS[2] |= (1 << (sn - 32));
-				}
-			}
-		}
+	// 	if (Para_plc.pcsnum[i] > 0)
+	// 	{
+	// 		for(j=0;j<Para_plc.pcsnum[i];j++)
+	// 		{
+	// 			sn=i*6+j;
+	// 			if(sn>=0 && sn<16)
+	// 			{
+	// 				flag_RecvNeed_PCS[0] |= (1<<sn);
+	// 			}
+	// 			else if(sn>16 && sn<32)
+	// 			{
+	// 				flag_RecvNeed_PCS[1] |= (1 << (sn-16));
+	// 			}
+	// 			else{
+	// 				flag_RecvNeed_PCS[2] |= (1 << (sn - 32));
+	// 			}
+	// 		}
+	// 	}
 
-	}
+	// }
 
 	if (FAIL == CreateSettingThread(&ThreadID, &Thread_attr, (void *)Modbus_clientRecv_thread, NULL, 1, 1))
 	{

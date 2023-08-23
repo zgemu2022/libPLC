@@ -35,7 +35,7 @@ int ykOrderFromBms(unsigned char type, YK_PARA *pYkPara, CallbackYK pfun)
 	}
     else if(type==_BMS_PLC_YK_)
 	{
-		printf("666_BMS_PLC_YK_\n");
+		printf("666_BMS_PLC_YK_ pYkPara->data[0]：%d\n",pYkPara->data[0]);
 		pbackBmsFun = pfun;
 		if(pYkPara->data[0]>0)
 		   SendBmsDataToThread(pYkPara->item);

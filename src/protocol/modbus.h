@@ -63,10 +63,11 @@ typedef struct
 #define BOX_SwitchD1_OFF 11			  //开关柜D1分闸
 #define BOX_SwitchD2_ON 12			  //开关柜D2合闸
 #define BOX_SwitchD2_OFF 13			  //开关柜D2分闸
-#define EMS_PW_SETTING 14			  //有功功率
-#define EMS_QW_SETTING 15			  //无功功率
-#define ONE_FM_PW_SETTING 16		  //一次调频有功功率
-#define ONE_FM_QW_SETTING 17		  //一次调频无功功率
+#define TURN_ON_THE_FAN  14           //打开风扇
+#define EMS_PW_SETTING 15			  //有功功率
+#define EMS_QW_SETTING 16			  //无功功率
+#define ONE_FM_PW_SETTING 17		  //一次调频有功功率
+#define ONE_FM_QW_SETTING 18		  //一次调频无功功率
 
 typedef struct
 {

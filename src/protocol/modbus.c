@@ -36,10 +36,13 @@ int AnalysModbus(unsigned char *pdata, int len)
 	{
 		unsigned short data = *(unsigned short *)&emudata[3];
 		int order = 6;
+
+
 		if ((data & (1 << PLC_EMU_DSTART)) != 0)
 			order = 1;
 		else if ((data & (1 << PLC_EMU_STOP)) != 0)
 			order = 2;
+
 
 		if (order > 0)
 			pPara_plc->funOrder(order);
@@ -72,7 +75,6 @@ int SendBmsDataToThread(unsigned char order)
 		break;
 	case BOX_35kV_OFF: //				  // 35kV进线柜分闸
 		val |= (1<<EMU_PLC_BOX_35kV_OFF);
-
 		break;
 	case BOX_SwitchD1_ON: //开关柜D1合闸
 		val |= (1<<EMU_PLC_BOX_SwitchD1_ON);
@@ -85,6 +87,9 @@ int SendBmsDataToThread(unsigned char order)
 		break;
 	case BOX_SwitchD2_OFF: //开关柜D2分闸
 		val |= (1<<EMU_PLC_BOX_SwitchD2_OFF);
+		break;
+	case 18: //风机
+		val |= (1<<0);
 		break;
 	default:
 		break;
